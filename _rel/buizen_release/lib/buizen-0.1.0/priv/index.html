@@ -3,16 +3,24 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>Taak erlang</title>
     <script src="/static/jquery.min.js"></script>
+    
     <script type="text/javascript">
-        function pic1()
+        function loadJson()
         {
-            document.getElementById("img").src = "http://www.mostbeautifulthings.net/wp-content/uploads/2014/04/beautiful-birds-17.jpg";
+          $.getJSON("/static/buizen_info.json", function(data){
+
+            var items = [];
+            $.each( data, function( key, val ) {
+              console.log("Id: " + key + " waarde: " + val);
+            });
+          
+
+          });
         }
     </script>
   </head>
 
   <body>
-    <img src = "" id = "img"/>
-    <input type="button" value="Show bird" onclick="pic1()"/>
+    <input type="button" value="Refresh" onclick="loadJson()"/>
   </body>
 </html>
