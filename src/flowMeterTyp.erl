@@ -10,6 +10,7 @@ init() ->
 	survivor:entry(flowMeterTyp_created),
 	loop().
 
+
 loop() -> 
 	receive
 		{initial_state, [MeterInst_Pid, [ResInst_Pid, RealWorldCmdFn]], ReplyFn} ->
@@ -31,6 +32,7 @@ loop() ->
 			#{on_or_off := OnOrOff} = State, 
 			ReplyFn(OnOrOff),
 			loop()
+		
 	end. 
 
 computeFlow(ResCircuit) -> 

@@ -4,7 +4,11 @@
     <title>Taak erlang</title>
     <script src="/static/jquery.min.js"></script>
     
-    <script type="text/javascript">
+    
+  </head>
+
+  <body>
+      <script type="text/javascript">
         function loadJson()
         {
           $.getJSON("/static/buizen_info.json", function(data){
@@ -17,10 +21,16 @@
 
           });
         }
-    </script>
-  </head>
+        
 
-  <body>
-    <input type="button" value="Refresh" onclick="loadJson()"/>
+
+     
+        
+      
+
+ 
+    </script>
+    
+
   </body>
 </html>

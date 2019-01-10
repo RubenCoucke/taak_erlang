@@ -1,5 +1,5 @@
 %% coding: utf-8
-%% script generated at {2018,12,27} {16,51,32}
+%% script generated at {2019,1,10} {16,58,22}
 {script,
     {"buizen_release","1"},
     [{preLoaded,
@@ -101,9 +101,10 @@
      {path,["$ROOT/lib/buizen-0.1.0/ebin"]},
      {primLoad,
          [buizen_app,buizen_display_handler,buizen_sup,connector,
-          flowMeterInst,flowMeterTyp,fluidumInst,fluidumTyp,location,msg,
-          pipeInst,pipeTyp,pipe_system_main,pumpInst,pumpTyp,
-          resource_instance,resource_type,survivor]},
+          flowMeterInst,flowMeterTyp,fluidumInst,fluidumTyp,heatExchangeLink,
+          heatExchangerInst,heatExchangerTyp,location,msg,pipeInst,pipeTyp,
+          pipe_system_main,pumpInst,pumpTyp,resource_instance,resource_type,
+          survivor]},
      {path,["$ROOT/lib/observer-2.8.1/ebin"]},
      {primLoad,
          [cdv_atom_cb,cdv_bin_cb,cdv_detail_wx,cdv_dist_cb,cdv_ets_cb,
@@ -446,7 +447,8 @@
                    {modules,
                        [buizen_app,buizen_display_handler,buizen_sup,
                         connector,flowMeterInst,flowMeterTyp,fluidumInst,
-                        fluidumTyp,location,msg,pipeInst,pipeTyp,
+                        fluidumTyp,heatExchangeLink,heatExchangerInst,
+                        heatExchangerTyp,location,msg,pipeInst,pipeTyp,
                         pipe_system_main,pumpInst,pumpTyp,resource_instance,
                         resource_type,survivor]},
                    {registered,[buizen_sup]},

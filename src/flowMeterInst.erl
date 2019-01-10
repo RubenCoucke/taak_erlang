@@ -30,6 +30,7 @@ loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid) ->
 			ReplyFn(Answer), 
 			loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid);
 		{estimate_flow, ReplyFn} ->
+			survivor:entry({estimate_flow_state, State}),
 			{ok, InfluenceFn} = msg:get(FlowMeterTyp_Pid, estimate_flow, State),
 			ReplyFn(InfluenceFn),
 			loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid);

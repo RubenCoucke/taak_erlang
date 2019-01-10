@@ -7,8 +7,8 @@ create(Selector, ParameterList) ->
 	%
 	% 	resource_type:create(pipeTyp, []). 
 	%
-	% resource type creation must select a specific type.
-	% Creation of an abstract (partially defined) type is
+	% resource type creation must select a specific type
+	% creation of an abstract (partially defined) type is
 	% not possible. Returns {ok, ResTyp_Pid}. 
 	apply(Selector, create, ParameterList).
 	

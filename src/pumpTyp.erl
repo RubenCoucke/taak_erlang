@@ -19,11 +19,11 @@ loop() ->
 					  rw_cmd => RealWorldCmdFn, on_or_off => off}), 
 			loop();
 		{switchOff, State, ReplyFn} -> 
-			#{rw_cmd := ExecFn} = State, ExecFn(off), 
+			%#{rw_cmd := ExecFn} = State, ExecFn(off), 
 			ReplyFn(State#{on_or_off := off}),
 			loop(); 
 		{switchOn, State, ReplyFn} -> 
-			#{rw_cmd := ExecFn} = State, ExecFn(on), 
+			%#{rw_cmd := ExecFn} = State, ExecFn(on), 
 			ReplyFn(State#{on_or_off := on}),
 			loop(); 
 		{isOn, State, ReplyFn} -> 
