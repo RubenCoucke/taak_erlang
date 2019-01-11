@@ -8,7 +8,10 @@
   </head>
 
   <body>
-      <script type="text/javascript">
+      <canvas id="myCanvas" width="500" height="300" style="border:1px solid #000000"></canvas>
+      <button id="button" onclick="loadJson()">load</button>
+      <script>
+        var verbindingen;
         function loadJson()
         {
           console.log("Loading data");
@@ -16,20 +19,31 @@
 
             $.parseJSON(data);
             //voorbeeld voor data op te vragen van json file
-            console.log(data["Verbindingen"][0]);
+            console.log(data["Verbindingen"][4]);
+            verbindingen = data["Verbindingen"];
 
           });
         }
         
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
 
+        function drawCircuit(connections)
+        {
+          var x = 5;
+          var y = 5;
+          ctx.beginPath();
+          for (var i = 0; i <= connections.length(); i++) 
+          {
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y+50);
+            ctx.stroke();
+            x += 10;
+          }
+        }
 
-     
-        
-      
+        drawCircuit(verbindingen);
 
- 
-    </script>
-    <button id="button" onclick="loadJson()">load</button>
-
+      </script>
   </body>
 </html>

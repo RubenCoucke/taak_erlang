@@ -1,11 +1,9 @@
-ERL_CFLAGS ?= -finline-functions -Wall -fPIC -I "/usr/local/Cellar/erlang/21.1.3/lib/erlang/erts-10.1.3/include" -I "/usr/local/Cellar/erlang/21.1.3/lib/erlang/lib/erl_interface-3.10.4/include"
-ERL_LDFLAGS ?= -L "/usr/local/Cellar/erlang/21.1.3/lib/erlang/lib/erl_interface-3.10.4/lib" -lerl_interface -lei
+ERL_CFLAGS ?= -finline-functions -Wall -fPIC -I "/usr/lib/erlang/erts-7.3/include" -I "/usr/lib/erlang/lib/erl_interface-3.8.2/include"
+ERL_LDFLAGS ?= -L "/usr/lib/erlang/lib/erl_interface-3.8.2/lib" -lerl_interface -lei
 
 CFLAGS =  -Ic_src/ -g -Wall  -O3 -fno-strict-aliasing
 CXXFLAGS =  -Ic_src/ -g -Wall  -O3
 LDFLAGS =  -lstdc++
-
-LDFLAGS += -flat_namespace -undefined suppress
 
 all:: priv/jiffy.so
 
@@ -22,4 +20,4 @@ all:: priv/jiffy.so
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(ERL_CFLAGS) $(DRV_CFLAGS) $(EXE_CFLAGS)
 
 priv/jiffy.so: $(foreach ext,.c .C .cc .cpp,$(patsubst %$(ext),%.o,$(filter %$(ext),$(wildcard c_src/*.c c_src/*.cc c_src/double-conversion/*.cc))))
-	$(CC) -o $@ $? $(LDFLAGS) $(ERL_LDFLAGS) $(DRV_LDFLAGS) $(EXE_LDFLAGS)
+	$(CC) -o $@ $? $(LDFLAGS) $(ERL_LDFLAGS) $(DRV_LDFLAGS) $(EXE_LDFLAGS) -shared
