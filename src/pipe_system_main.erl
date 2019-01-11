@@ -9,8 +9,8 @@ init()->
     {ok, PipeType} = resource_type:create(pipeTyp, []),
     {ok, Pipe1} = pipeInst:create(self(), PipeType),
     {ok, Pipe2} = pipeInst:create(self(), PipeType),
-    %{ok, Pipe3} = pipeInst:create(self(), PipeType),
-    %{ok, Pipe4} = pipeInst:create(self(), PipeType),
+    {ok, Pipe3} = pipeInst:create(self(), PipeType),
+    {ok, Pipe4} = pipeInst:create(self(), PipeType),
     %{ok, Pipe5} = pipeInst:create(self(), PipeType),
     %{ok, Pipe6} = pipeInst:create(self(), PipeType),
     %{ok, Pipe7} = pipeInst:create(self(), PipeType),
@@ -34,17 +34,71 @@ init()->
     %verbindingen maken
     {ok, [PompConnector1, PompConnector2]} = msg:get(Pomp, get_connectors),
     {ok, [DebietmeterConnector1, DebietmeterConnector2]} = msg:get(Debietmeter, get_connectors),
-    connector:connect(PompConnector1, DebietmeterConnector1),
-    connector:connect(PompConnector2, DebietmeterConnector2),
+    {ok, [Pipe3Connector1, Pipe3Connector2]} = msg:get(Pipe3, get_connectors),
+    {ok, [Pipe4Connector1, Pipe4Connector2]} = msg:get(Pipe4, get_connectors),
+
+    connector:connect(PompConnector1, Pipe3Connector1),
+    connector:connect(Pipe3Connector2, DebietmeterConnector1),
+    connector:connect(DebietmeterConnector2, Pipe4Connector1),
+    connector:connect(Pipe4Connector2, PompConnector1),
+
     %fluidum
     FluidumType = fluidumTyp:create(),
     {ok, Fluidum} = fluidumInst:create(PompConnector1, FluidumType),
 
     {ok, [PompLocatie]} = msg:get(Pomp, get_locations),
+    {ok, [DebietmeterLocatie]} = msg:get(Debietmeter, get_locations),
+    {ok, [Buis3Locatie]} = msg:get(Pipe3, get_locations),
+    {ok, [Buis4Locatie]} = msg:get(Pipe4, get_locations),
+    
     location:departure(PompLocatie),
     %survivor:entry(flowMeterInst:estimate_flow(Debietmeter)),
 
-    Data = jiffy:encode({[{ruben, heeft_een_grote_piemel}]}),
+
+    %data schrijven naar json file
+    Options = [pretty],
+    Data = jiffy:encode(#
+        {
+            <<"Pomp (buis 1)">> => #{
+                <<"locatie">> => list_to_atom(pid_to_list(PompLocatie)),
+                <<"verbindingen">> => #{
+                    <<"verbinding1">> => list_to_atom(pid_to_list(PompConnector1)),
+                    <<"verbinding2">> => list_to_atom(pid_to_list(PompConnector2))
+                }
+            },
+            <<"Debietmeter (buis 2)">> => #{
+                <<"locatie">> => list_to_atom(pid_to_list(DebietmeterLocatie)),
+                <<"verbindingen">> => #{
+                    <<"verbinding1">> => list_to_atom(pid_to_list(DebietmeterConnector1)),
+                    <<"verbinding2">> => list_to_atom(pid_to_list(DebietmeterConnector2))
+                }
+            },
+            <<"Buizen">> => #{
+                <<"Buis 3">> => #{
+                    <<"locatie">> => list_to_atom(pid_to_list(Buis3Locatie)),
+                    <<"verbindingen">> => #{
+                        <<"verbinding1">> => list_to_atom(pid_to_list(Pipe3Connector1)),
+                        <<"verbinding2">> => list_to_atom(pid_to_list(Pipe3Connector2))
+                    }
+                },
+                <<"Buis 4">> => #{
+                    <<"locatie">> => list_to_atom(pid_to_list(Buis4Locatie)),
+                    <<"verbindingen">> => #{
+                        <<"verbinding1">> => list_to_atom(pid_to_list(Pipe4Connector1)),
+                        <<"verbinding2">> => list_to_atom(pid_to_list(Pipe4Connector2))
+                    }
+                }
+            },
+            <<"Verbindingen">> => [
+                [list_to_atom(pid_to_list(PompConnector1)), list_to_atom(pid_to_list(Pipe3Connector1))],
+                [list_to_atom(pid_to_list(Pipe3Connector2)), list_to_atom(pid_to_list(DebietmeterConnector1))],
+                [list_to_atom(pid_to_list(DebietmeterConnector2)), list_to_atom(pid_to_list(Pipe4Connector1))],
+                [list_to_atom(pid_to_list(Pipe4Connector2)), list_to_atom(pid_to_list(PompConnector2))]
+            ]
+            
+        }
+    , Options),
+                        
     write_json_file(Data).
     
     

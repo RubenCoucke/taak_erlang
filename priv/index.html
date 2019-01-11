@@ -11,13 +11,12 @@
       <script type="text/javascript">
         function loadJson()
         {
+          console.log("Loading data");
           $.getJSON("/static/buizen_info.json", function(data){
 
-            var items = [];
-            $.each( data, function( key, val ) {
-              console.log("Id: " + key + " waarde: " + val);
-            });
-          
+            $.parseJSON(data);
+            //voorbeeld voor data op te vragen van json file
+            console.log(data["Verbindingen"][0]);
 
           });
         }
@@ -30,7 +29,7 @@
 
  
     </script>
-    
+    <button id="button" onclick="loadJson()">load</button>
 
   </body>
 </html>
