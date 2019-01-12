@@ -1,50 +1,50 @@
 {
   "Verbindingen" : [
     [
-      "<0.814.0>",
-      "<0.817.0>"
+      "<0.1007.0>",
+      "<0.1010.0>"
     ],
     [
-      "<0.818.0>",
-      "<0.810.0>"
+      "<0.1011.0>",
+      "<0.1004.0>"
     ],
     [
-      "<0.811.0>",
-      "<0.820.0>"
+      "<0.1005.0>",
+      "<0.1013.0>"
     ],
     [
-      "<0.821.0>",
-      "<0.815.0>"
+      "<0.1014.0>",
+      "<0.1008.0>"
     ]
   ],
   "Pomp (buis 1)" : {
     "verbindingen" : {
-      "verbinding2" : "<0.815.0>",
-      "verbinding1" : "<0.814.0>"
+      "verbinding2" : "<0.1008.0>",
+      "verbinding1" : "<0.1007.0>"
     },
-    "locatie" : "<0.813.0>"
+    "locatie" : "<0.1006.0>"
   },
   "Debietmeter (buis 2)" : {
     "verbindingen" : {
-      "verbinding2" : "<0.811.0>",
-      "verbinding1" : "<0.810.0>"
+      "verbinding2" : "<0.1005.0>",
+      "verbinding1" : "<0.1004.0>"
     },
-    "locatie" : "<0.809.0>"
+    "locatie" : "<0.1003.0>"
   },
   "Buizen" : {
     "Buis 4" : {
       "verbindingen" : {
-        "verbinding2" : "<0.821.0>",
-        "verbinding1" : "<0.820.0>"
+        "verbinding2" : "<0.1014.0>",
+        "verbinding1" : "<0.1013.0>"
       },
-      "locatie" : "<0.819.0>"
+      "locatie" : "<0.1012.0>"
     },
     "Buis 3" : {
       "verbindingen" : {
-        "verbinding2" : "<0.818.0>",
-        "verbinding1" : "<0.817.0>"
+        "verbinding2" : "<0.1011.0>",
+        "verbinding1" : "<0.1010.0>"
       },
-      "locatie" : "<0.816.0>"
+      "locatie" : "<0.1009.0>"
     }
   }
 }

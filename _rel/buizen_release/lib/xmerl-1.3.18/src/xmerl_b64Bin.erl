@@ -1,7 +1,7 @@
 -module(xmerl_b64Bin).
 -export([parse/1, parse_and_scan/1, format_error/1]).
 
--file("/root/deb/otp/bootstrap/lib/parsetools/include/yeccpre.hrl", 0).
+-file("/private/tmp/erlang-20181124-69775-19wo8ox/otp-OTP-21.1.3/bootstrap/lib/parsetools/include/yeccpre.hrl", 0).
 %%
 %% %CopyrightBegin%
 %%
