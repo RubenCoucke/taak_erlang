@@ -8,11 +8,19 @@
   </head>
 
   <body>
-      <canvas id="myCanvas" width="500" height="300" style="border:1px solid #000000"></canvas>
+      <canvas id="myCanvas" width="1000" height="700" style="border:1px solid #000000"></canvas>
       <button id="button" onclick="loadJson()">load</button>
       <script>
-        var verbindingen;
+        var debietmeter = { name: "Debietmeter", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "green", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var buis3 = { name: "Buis 3", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "blue", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var buis4 = { name: "Buis 4", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "blue", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var buis7 = { name: "Buis 7", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "blue", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var ww1 = { name: "Warmtewisselaar 1", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "orange", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var ww2 = { name: "Warmtewisselaar 2", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "orange", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var pomp = { name: "Pomp", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "black", verbondenMet: { links: "pijp", rechts: "pijp" }}
+        var buizenarray = [pomp, debietmeter, buis3, buis4, ww1, ww2, buis7];
         
+
         loadJson();
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
@@ -20,32 +28,262 @@
         function loadJson()
         {
           console.log("Loading data");
-          $.getJSON("/static/buizen_info.json", function(data){
+          $.getJSON("static/buizen_info.json", function(data){
 
             $.parseJSON(data);
             
-            
-            verbindingen = data["Verbindingen"];
-            console.log(verbindingen[0]);
-            drawCircuit(verbindingen);
+            drawCircuit(data);
 
           });
-        }
+        };
 
-        function drawCircuit(connections)
+        function drawCircuit(data)
         {
-          var x = 5;
-          var y = 5;
-          ctx.beginPath();
-          for (var i = 0; i <= connections.length; i++) 
-          {
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, y+50);
-            ctx.stroke();
-            x += 10;
-          }
-        }
+          makeVariables(data);
+          
+          var buizenAanBovenZijde = 0;
+          var buizenAanOnderZijde = 0;
+          var buizenAanRechterZijde = 0;
+          var buizenAanLinkerZijde = 0;
+          var aantalBuizenNogToeTeVoegen = buizenarray.length;
 
+          for(var i = 0; i < buizenarray.length; i++){
+            if(aantalBuizenNogToeTeVoegen >= 1){
+              buizenAanBovenZijde++;
+              aantalBuizenNogToeTeVoegen--;
+            }
+            if(aantalBuizenNogToeTeVoegen >= 1){
+              buizenAanRechterZijde++;
+              aantalBuizenNogToeTeVoegen--;
+            }
+            if(aantalBuizenNogToeTeVoegen >= 1){
+              buizenAanOnderZijde++;
+              aantalBuizenNogToeTeVoegen--;
+            }
+            if(aantalBuizenNogToeTeVoegen >= 1){
+              buizenAanLinkerZijde++;
+              aantalBuizenNogToeTeVoegen--;
+            }
+            if(aantalBuizenNogToeTeVoegen <= 0){
+              break;
+            }
+          }
+          
+
+          var currentX = 300;
+          var currentY = 50;
+          var startX = currentX;
+          var startY = currentY;
+          var pipeLength = 200;
+          
+          var currentBuisTekenen = buizenarray[0];
+
+          //buizen aan boven zijde tekenen
+          for (var i = 0; i < buizenAanBovenZijde; i++) 
+          {
+            currentBuisTekenen.locatieX = [currentX, currentX + pipeLength];
+            currentBuisTekenen.locatieY = [currentY-5, currentY+5];
+            //lijn tekenen
+            ctx.beginPath();
+            ctx.moveTo(currentX, currentY);
+            ctx.lineTo(currentX + pipeLength, currentY);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = currentBuisTekenen.kleur;
+            ctx.stroke();
+
+            //eindpunt tekenen
+            ctx.beginPath();
+            ctx.arc(currentX+ pipeLength, currentY, 10, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = currentBuisTekenen.kleur;
+            ctx.stroke();
+            ctx.fill();
+
+            currentX += pipeLength;
+            for(var j = 0; j < buizenarray.length; j++){
+              if(buizenarray[j].locatiePid == currentBuisTekenen.verbondenMet.rechts){
+                currentBuisTekenen = buizenarray[j];
+                break;
+              }
+            }
+
+          }
+
+          //buizen aan rechterzijde tekenen
+          for (var i = 0; i < buizenAanRechterZijde; i++) 
+          {
+            currentBuisTekenen.locatieX = [currentX - 5, currentX + 5];
+            currentBuisTekenen.locatieY = [currentY, currentY + pipeLength];
+            //lijn tekenen
+            ctx.beginPath();
+            ctx.moveTo(currentX, currentY);
+            ctx.lineTo(currentX , currentY+ pipeLength);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = currentBuisTekenen.kleur;
+            ctx.stroke();
+
+            //eindpunt tekenen
+            ctx.beginPath();
+            ctx.arc(currentX, currentY+pipeLength, 10, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = currentBuisTekenen.kleur;
+            ctx.stroke();
+            ctx.fill();
+
+            currentY += pipeLength;
+
+            for(var j = 0; j < buizenarray.length; j++){
+              if(buizenarray[j].locatiePid == currentBuisTekenen.verbondenMet.rechts){
+                currentBuisTekenen = buizenarray[j];
+                break;
+              }
+            }
+
+          }
+
+          //buizen aan onderzijde tekenen
+          for (var i = 0; i < buizenAanOnderZijde; i++) 
+          {
+            currentBuisTekenen.locatieX = [currentX - pipeLength, currentX];
+            currentBuisTekenen.locatieY = [currentY-5, currentY+5];
+            //lijn tekenen
+            ctx.beginPath();
+            ctx.moveTo(currentX, currentY);
+            ctx.lineTo(currentX- pipeLength , currentY);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = currentBuisTekenen.kleur;
+            ctx.stroke();
+
+            //eindpunt tekenen
+            ctx.beginPath();
+            ctx.arc(currentX- pipeLength, currentY, 10, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = currentBuisTekenen.kleur;
+            ctx.stroke();
+            ctx.fill();
+
+            currentX -= pipeLength;
+
+            for(var j = 0; j < buizenarray.length; j++){
+              if(buizenarray[j].locatiePid == currentBuisTekenen.verbondenMet.rechts){
+                currentBuisTekenen = buizenarray[j];
+                break;
+              }
+            }
+
+          }
+
+          //buizen aan linkerzijde tekenen
+          for (var i = 0; i < buizenAanLinkerZijde; i++) 
+          {
+            
+            if(i == buizenAanLinkerZijde-1){
+              //lijn tekenen
+              currentBuisTekenen.locatieX = [currentX - 5, currentX + 5];
+              currentBuisTekenen.locatieY = [startY, currentY];
+
+              ctx.beginPath();
+              ctx.moveTo(currentX, currentY);
+              ctx.lineTo(startX , startY);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+
+              //eindpunt tekenen
+              ctx.beginPath();
+              ctx.arc(startX, startY, 10, 0, 2 * Math.PI);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+              ctx.fill();
+
+              currentY -= pipeLength;
+            }
+            else {
+              currentBuisTekenen.locatieX = [currentX - 5, currentX + 5];
+              currentBuisTekenen.locatieY = [currentY-pipeLength, currentY];
+              //lijn tekenen
+              ctx.beginPath();
+              ctx.moveTo(currentX, currentY);
+              ctx.lineTo(currentX , currentY- pipeLength);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+
+              //eindpunt tekenen
+              ctx.beginPath();
+              ctx.arc(currentX, currentY- pipeLength, 10, 0, 2 * Math.PI);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+              ctx.fill();
+
+              currentY -= pipeLength;
+            }
+            
+
+            for(var j = 0; j < buizenarray.length; j++){
+              if(buizenarray[j].locatiePid == currentBuisTekenen.verbondenMet.rechts){
+                currentBuisTekenen = buizenarray[j];
+                break;
+              }
+            }
+
+          }
+
+          
+
+        };
+
+        
+        function makeVariables(jsonData){
+          debietmeter.locatiePid = jsonData["Debietmeter (buis 2)"]["locatie"];
+          debietmeter.connectorPid.connector1 = jsonData["Debietmeter (buis 2)"]["verbindingen"]["verbinding1"];
+          debietmeter.connectorPid.connector2 = jsonData["Debietmeter (buis 2)"]["verbindingen"]["verbinding2"];
+          
+          buis3.locatiePid = jsonData["Buizen"]["Buis 3"]["locatie"];
+          buis3.connectorPid.connector1 = jsonData["Buizen"]["Buis 3"]["verbindingen"]["verbinding1"];
+          buis3.connectorPid.connector2 = jsonData["Buizen"]["Buis 3"]["verbindingen"]["verbinding2"];
+          
+          buis4.locatiePid = jsonData["Buizen"]["Buis 4"]["locatie"];
+          buis4.connectorPid.connector1 = jsonData["Buizen"]["Buis 4"]["verbindingen"]["verbinding1"];
+          buis4.connectorPid.connector2 = jsonData["Buizen"]["Buis 4"]["verbindingen"]["verbinding2"];
+          
+          buis7.locatiePid = jsonData["Buizen"]["Buis 7"]["locatie"];
+          buis7.connectorPid.connector1 = jsonData["Buizen"]["Buis 7"]["verbindingen"]["verbinding1"];
+          buis7.connectorPid.connector2 = jsonData["Buizen"]["Buis 7"]["verbindingen"]["verbinding2"];
+          
+          ww1.locatiePid = jsonData["Warmtewisselaar 1 (buis 5)"]["locatie"];
+          ww1.connectorPid.connector1 = jsonData["Warmtewisselaar 1 (buis 5)"]["verbindingen"]["verbinding1"];
+          ww1.connectorPid.connector2 = jsonData["Warmtewisselaar 1 (buis 5)"]["verbindingen"]["verbinding2"];
+          
+          ww2.locatiePid = jsonData["Warmtewisselaar 2 (buis 6)"]["locatie"];
+          ww2.connectorPid.connector1 = jsonData["Warmtewisselaar 2 (buis 6)"]["verbindingen"]["verbinding1"];
+          ww2.connectorPid.connector2 = jsonData["Warmtewisselaar 2 (buis 6)"]["verbindingen"]["verbinding2"];
+          
+          pomp.locatiePid = jsonData["Pomp (buis 1)"]["locatie"];
+          pomp.connectorPid.connector1 = jsonData["Pomp (buis 1)"]["verbindingen"]["verbinding1"];
+          pomp.connectorPid.connector2 = jsonData["Pomp (buis 1)"]["verbindingen"]["verbinding2"];
+
+          
+          var verbindingen = jsonData["Verbindingen"];
+          for(var i = 0; i < verbindingen.length; i++){
+            for(var j = 0; j < buizenarray.length; j++){
+              if(verbindingen[i][0] == buizenarray[j].connectorPid.connector2){
+
+                for(var k = 0; k < buizenarray.length; k++){
+                  if(verbindingen[i][1] == buizenarray[k].connectorPid.connector1){
+                    buizenarray[j].verbondenMet.rechts = buizenarray[k].locatiePid;
+                    buizenarray[k].verbondenMet.links = buizenarray[j].locatiePid;
+                  }
+                }
+              }
+            }
+          }
+         
+
+          
+        };
 
       </script>
   </body>

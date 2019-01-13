@@ -11,18 +11,12 @@ init()->
     {ok, Pipe2} = pipeInst:create(self(), PipeType),
     {ok, Pipe3} = pipeInst:create(self(), PipeType),
     {ok, Pipe4} = pipeInst:create(self(), PipeType),
-    %{ok, Pipe5} = pipeInst:create(self(), PipeType),
-    %{ok, Pipe6} = pipeInst:create(self(), PipeType),
-    %{ok, Pipe7} = pipeInst:create(self(), PipeType),
+    {ok, Pipe5} = pipeInst:create(self(), PipeType),
+    {ok, Pipe6} = pipeInst:create(self(), PipeType),
+    {ok, Pipe7} = pipeInst:create(self(), PipeType),
     %{ok, Pipe8} = pipeInst:create(self(), PipeType),
 
-    %warmtewisselaar maken
-    %{ok, Warmtewisselaar} = heatExchangerTyp:create(),
-    %{ok, WarmtewisselaarInst} = heatExchangerInst:create(self(), Warmtewisselaar, PipeInst1, WarmtewisselaarInst2),
-
-    %{ok, Warmtewisselaar2} = heatExchangerTyp:create(),
-    %{ok, WarmtewisselaarInst2} = heatExchangerInst:create(self(), Warmtewisselaar2, PipeInst2, WarmtewisselaarInst),
-
+   
     %debietmeter maken
     {ok, DebietmeterType} = resource_type:create(flowMeterTyp, []),
     {ok, Debietmeter} = flowMeterInst:create(self(), DebietmeterType, Pipe1, 0),
@@ -31,16 +25,29 @@ init()->
     {ok, PompType} = resource_type:create(pumpTyp, []),
     {ok, Pomp} = pumpInst:create(self(), PompType, Pipe2, 0),
 
+    %warmtewisselaar maken
+
+    HE_link_spec = #{delta => 0.9},
+    {ok, WarmtewisselaarType} = resource_type:create(heatExchangerTyp, []),
+    {ok, Warmtewisselaar1} = heatExchangerInst:create(self(), WarmtewisselaarType, Pipe5, HE_link_spec),
+    {ok, Warmtewisselaar2} = heatExchangerInst:create(self(), WarmtewisselaarType, Pipe6, HE_link_spec),
+
     %verbindingen maken
     {ok, [PompConnector1, PompConnector2]} = msg:get(Pomp, get_connectors),
     {ok, [DebietmeterConnector1, DebietmeterConnector2]} = msg:get(Debietmeter, get_connectors),
     {ok, [Pipe3Connector1, Pipe3Connector2]} = msg:get(Pipe3, get_connectors),
     {ok, [Pipe4Connector1, Pipe4Connector2]} = msg:get(Pipe4, get_connectors),
+    {ok, [Warmtewisselaar1Connector1, Warmtewisselaar1Connector2]} = msg:get(Warmtewisselaar1, get_connectors),
+    {ok, [Warmtewisselaar2Connector1, Warmtewisselaar2Connector2]} = msg:get(Warmtewisselaar2, get_connectors),
+    {ok, [Pipe7Connector1, Pipe7Connector2]} = msg:get(Pipe7, get_connectors),
 
     connector:connect(PompConnector1, Pipe3Connector1),
     connector:connect(Pipe3Connector2, DebietmeterConnector1),
     connector:connect(DebietmeterConnector2, Pipe4Connector1),
-    connector:connect(Pipe4Connector2, PompConnector1),
+    connector:connect(Pipe4Connector2, Warmtewisselaar1Connector1),
+    connector:connect(Warmtewisselaar1Connector2, Warmtewisselaar2Connector1),
+    connector:connect(Warmtewisselaar2Connector2, Pipe7Connector1),
+    connector:connect(Pipe7Connector2, PompConnector2),
 
     %fluidum
     FluidumType = fluidumTyp:create(),
@@ -50,9 +57,13 @@ init()->
     {ok, [DebietmeterLocatie]} = msg:get(Debietmeter, get_locations),
     {ok, [Buis3Locatie]} = msg:get(Pipe3, get_locations),
     {ok, [Buis4Locatie]} = msg:get(Pipe4, get_locations),
+    {ok, [WW1Locatie]} = msg:get(Warmtewisselaar1, get_locations),
+    {ok, [WW2Locatie]} = msg:get(Warmtewisselaar2, get_locations),
+    {ok, [Buis7Locatie]} = msg:get(Pipe7, get_locations),
     
     location:departure(PompLocatie),
-    %survivor:entry(flowMeterInst:estimate_flow(Debietmeter)),
+    
+    survivor:entry(msg:get(Debietmeter, get_state)),
 
 
     %data schrijven naar json file
@@ -73,6 +84,20 @@ init()->
                     <<"verbinding2">> => list_to_atom(pid_to_list(DebietmeterConnector2))
                 }
             },
+            <<"Warmtewisselaar 1 (buis 5)">> => #{
+                <<"locatie">> => list_to_atom(pid_to_list(WW1Locatie)),
+                <<"verbindingen">> => #{
+                    <<"verbinding1">> => list_to_atom(pid_to_list(Warmtewisselaar1Connector1)),
+                    <<"verbinding2">> => list_to_atom(pid_to_list(Warmtewisselaar1Connector2))
+                }
+            },
+            <<"Warmtewisselaar 2 (buis 6)">> => #{
+                <<"locatie">> => list_to_atom(pid_to_list(WW2Locatie)),
+                <<"verbindingen">> => #{
+                    <<"verbinding1">> => list_to_atom(pid_to_list(Warmtewisselaar2Connector1)),
+                    <<"verbinding2">> => list_to_atom(pid_to_list(Warmtewisselaar2Connector2))
+                }
+            },
             <<"Buizen">> => #{
                 <<"Buis 3">> => #{
                     <<"locatie">> => list_to_atom(pid_to_list(Buis3Locatie)),
@@ -87,13 +112,24 @@ init()->
                         <<"verbinding1">> => list_to_atom(pid_to_list(Pipe4Connector1)),
                         <<"verbinding2">> => list_to_atom(pid_to_list(Pipe4Connector2))
                     }
+                },
+                <<"Buis 7">> => #{
+                    <<"locatie">> => list_to_atom(pid_to_list(Buis7Locatie)),
+                    <<"verbindingen">> => #{
+                        <<"verbinding1">> => list_to_atom(pid_to_list(Pipe7Connector1)),
+                        <<"verbinding2">> => list_to_atom(pid_to_list(Pipe7Connector2))
+                    }
                 }
+            
             },
             <<"Verbindingen">> => [
-                [list_to_atom(pid_to_list(PompConnector1)), list_to_atom(pid_to_list(Pipe3Connector1))],
+                [list_to_atom(pid_to_list(PompConnector2)), list_to_atom(pid_to_list(Pipe3Connector1))],
                 [list_to_atom(pid_to_list(Pipe3Connector2)), list_to_atom(pid_to_list(DebietmeterConnector1))],
                 [list_to_atom(pid_to_list(DebietmeterConnector2)), list_to_atom(pid_to_list(Pipe4Connector1))],
-                [list_to_atom(pid_to_list(Pipe4Connector2)), list_to_atom(pid_to_list(PompConnector2))]
+                [list_to_atom(pid_to_list(Pipe4Connector2)), list_to_atom(pid_to_list(Warmtewisselaar1Connector1))],
+                [list_to_atom(pid_to_list(Warmtewisselaar1Connector2)), list_to_atom(pid_to_list(Warmtewisselaar2Connector1))],
+                [list_to_atom(pid_to_list(Warmtewisselaar2Connector2)), list_to_atom(pid_to_list(Pipe7Connector1))],
+                [list_to_atom(pid_to_list(Pipe7Connector2)), list_to_atom(pid_to_list(PompConnector1))]
             ]
             
         }
@@ -103,7 +139,7 @@ init()->
     
     
 write_json_file(Text)->
-    file:write_file("../../priv/static/buizen_info.json", Text).
+    file:write_file("../../_rel/buizen_release/lib/buizen-0.1.0/priv/static/buizen_info.json", Text).
 
 
 %loop maken
