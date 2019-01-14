@@ -10,6 +10,7 @@
   <body>
       <canvas id="myCanvas" width="1000" height="700" style="border:1px solid #000000"></canvas>
       <button id="button" onclick="loadJson()">load</button>
+      <label id="label">label</label>
       <script>
         var debietmeter = { name: "Debietmeter", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "green", verbondenMet: { links: "pijp", rechts: "pijp" }}
         var buis3 = { name: "Buis 3", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "blue", verbondenMet: { links: "pijp", rechts: "pijp" }}
@@ -19,12 +20,18 @@
         var ww2 = { name: "Warmtewisselaar 2", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "orange", verbondenMet: { links: "pijp", rechts: "pijp" }}
         var pomp = { name: "Pomp", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "black", verbondenMet: { links: "pijp", rechts: "pijp" }}
         var buizenarray = [pomp, debietmeter, buis3, buis4, ww1, ww2, buis7];
+        var mousePos = { x: 0, y: 0};
         
-
         loadJson();
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
-        
+        var label = document.getElementById("label");
+
+        function showInformation(information){
+          console.log("show info");
+          label.innerText = information.name;
+        }
+
         function loadJson()
         {
           console.log("Loading data");
@@ -69,7 +76,8 @@
             }
           }
           
-
+          var hoogtsteAantalBuizenAanEenKant = Math.max(buizenAanBovenZijde, buizenAanLinkerZijde, buizenAanOnderZijde, buizenAanRechterZijde);
+          console.log(hoogtsteAantalBuizenAanEenKant);
           var currentX = 300;
           var currentY = 50;
           var startX = currentX;
@@ -82,7 +90,7 @@
           for (var i = 0; i < buizenAanBovenZijde; i++) 
           {
             currentBuisTekenen.locatieX = [currentX, currentX + pipeLength];
-            currentBuisTekenen.locatieY = [currentY-5, currentY+5];
+            currentBuisTekenen.locatieY = [currentY, currentY+20];
             //lijn tekenen
             ctx.beginPath();
             ctx.moveTo(currentX, currentY);
@@ -111,8 +119,9 @@
 
           //buizen aan rechterzijde tekenen
           for (var i = 0; i < buizenAanRechterZijde; i++) 
-          {
-            currentBuisTekenen.locatieX = [currentX - 5, currentX + 5];
+          { 
+            
+            currentBuisTekenen.locatieX = [currentX, currentX + 20];
             currentBuisTekenen.locatieY = [currentY, currentY + pipeLength];
             //lijn tekenen
             ctx.beginPath();
@@ -131,6 +140,8 @@
             ctx.fill();
 
             currentY += pipeLength;
+            
+            
 
             for(var j = 0; j < buizenarray.length; j++){
               if(buizenarray[j].locatiePid == currentBuisTekenen.verbondenMet.rechts){
@@ -144,25 +155,51 @@
           //buizen aan onderzijde tekenen
           for (var i = 0; i < buizenAanOnderZijde; i++) 
           {
-            currentBuisTekenen.locatieX = [currentX - pipeLength, currentX];
-            currentBuisTekenen.locatieY = [currentY-5, currentY+5];
-            //lijn tekenen
-            ctx.beginPath();
-            ctx.moveTo(currentX, currentY);
-            ctx.lineTo(currentX- pipeLength , currentY);
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = currentBuisTekenen.kleur;
-            ctx.stroke();
+            if(buizenAanOnderZijde < hoogtsteAantalBuizenAanEenKant && i == hoogtsteAantalBuizenAanEenKant-2){
+              currentBuisTekenen.locatieX = [currentX - pipeLength, currentX];
+              currentBuisTekenen.locatieY = [currentY, currentY+20];
+              //lijn tekenen
+              ctx.beginPath();
+              ctx.moveTo(currentX, currentY);
+              ctx.lineTo(startX , currentY);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
 
-            //eindpunt tekenen
-            ctx.beginPath();
-            ctx.arc(currentX- pipeLength, currentY, 10, 0, 2 * Math.PI);
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = currentBuisTekenen.kleur;
-            ctx.stroke();
-            ctx.fill();
+              //eindpunt tekenen
+              ctx.beginPath();
+              ctx.arc(startX, currentY, 10, 0, 2 * Math.PI);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+              ctx.fill();
 
-            currentX -= pipeLength;
+              currentX = startX;
+            
+            
+            }
+            else {
+              currentBuisTekenen.locatieX = [currentX - pipeLength, currentX];
+              currentBuisTekenen.locatieY = [currentY, currentY+20];
+              //lijn tekenen
+              ctx.beginPath();
+              ctx.moveTo(currentX, currentY);
+              ctx.lineTo(currentX- pipeLength , currentY);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+
+              //eindpunt tekenen
+              ctx.beginPath();
+              ctx.arc(currentX- pipeLength, currentY, 10, 0, 2 * Math.PI);
+              ctx.lineWidth = 10;
+              ctx.strokeStyle = currentBuisTekenen.kleur;
+              ctx.stroke();
+              ctx.fill();
+
+              currentX -= pipeLength;
+            }
+            
 
             for(var j = 0; j < buizenarray.length; j++){
               if(buizenarray[j].locatiePid == currentBuisTekenen.verbondenMet.rechts){
@@ -177,14 +214,14 @@
           for (var i = 0; i < buizenAanLinkerZijde; i++) 
           {
             
-            if(i == buizenAanLinkerZijde-1){
+            if(buizenAanLinkerZijde < hoogtsteAantalBuizenAanEenKant && i == hoogtsteAantalBuizenAanEenKant-2){
               //lijn tekenen
-              currentBuisTekenen.locatieX = [currentX - 5, currentX + 5];
+              currentBuisTekenen.locatieX = [currentX , currentX + 20];
               currentBuisTekenen.locatieY = [startY, currentY];
 
               ctx.beginPath();
               ctx.moveTo(currentX, currentY);
-              ctx.lineTo(startX , startY);
+              ctx.lineTo(currentX , startY);
               ctx.lineWidth = 10;
               ctx.strokeStyle = currentBuisTekenen.kleur;
               ctx.stroke();
@@ -197,10 +234,10 @@
               ctx.stroke();
               ctx.fill();
 
-              currentY -= pipeLength;
+              currentY = startY;
             }
             else {
-              currentBuisTekenen.locatieX = [currentX - 5, currentX + 5];
+              currentBuisTekenen.locatieX = [currentX , currentX + 20];
               currentBuisTekenen.locatieY = [currentY-pipeLength, currentY];
               //lijn tekenen
               ctx.beginPath();
@@ -235,7 +272,6 @@
 
         };
 
-        
         function makeVariables(jsonData){
           debietmeter.locatiePid = jsonData["Debietmeter (buis 2)"]["locatie"];
           debietmeter.connectorPid.connector1 = jsonData["Debietmeter (buis 2)"]["verbindingen"]["verbinding1"];
@@ -285,6 +321,49 @@
           
         };
 
+        (function() {
+          
+          document.onmousemove = handleMouseMove;
+          document.onmousedown = handleMouseDown;
+
+          function handleMouseDown(event){
+            
+            for(var i = 0; i < buizenarray.length; i++){
+              
+              if(mousePos.x > buizenarray[i].locatieX[0] && mousePos.x < buizenarray[i].locatieX[1] &&
+                 mousePos.y > buizenarray[i].locatieY[0] && mousePos.y < buizenarray[i].locatieY[1]){
+                   showInformation(buizenarray[i]);
+                   break;
+                 }
+
+            }
+          }
+
+          function handleMouseMove(event) {
+              var dot, eventDoc, doc, body, pageX, pageY;
+
+              event = event || window.event; // IE-ism
+
+              if (event.pageX == null && event.clientX != null) {
+                
+                eventDoc = (event.target && event.target.ownerDocument) || document;
+                doc = eventDoc.documentElement;
+                body = eventDoc.body;
+
+                event.pageX = event.clientX +
+                  (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+                  (doc && doc.clientLeft || body && body.clientLeft || 0);
+                event.pageY = event.clientY +
+                  (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+                  (doc && doc.clientTop  || body && body.clientTop  || 0 );
+              }
+              if(event.pageX != null && event.pageY != null){
+                mousePos.x = event.pageX;
+                mousePos.y = event.pageY;
+              }
+              
+          }
+        })();
       </script>
   </body>
 </html>
