@@ -12,25 +12,27 @@ init() ->
 
 loop() -> 
 	receive
-
-%    get_initial_state, self(),     ]
-		{initial_state, [ResInst_Pid, [PipeInst_Pid, RealWorldCmdFn]], ReplyFn} ->
+		{initial_state, {ResInst_Pid, {PipeInst_Pid, RealWorldCmdFn}}, ReplyFn} ->
 			ReplyFn(#{resInst => ResInst_Pid, pipeInst => PipeInst_Pid, 
 					  rw_cmd => RealWorldCmdFn, on_or_off => off}), 
 			loop();
 		{switchOff, State, ReplyFn} -> 
-			%#{rw_cmd := ExecFn} = State, ExecFn(off), 
+			#{rw_cmd := ExecFn} = State, ExecFn(off), 
 			ReplyFn(State#{on_or_off := off}),
 			loop(); 
 		{switchOn, State, ReplyFn} -> 
-			%#{rw_cmd := ExecFn} = State, ExecFn(on), 
+			#{rw_cmd := ExecFn} = State, ExecFn(on), 
 			ReplyFn(State#{on_or_off := on}),
 			loop(); 
 		{isOn, State, ReplyFn} -> 
 			#{on_or_off := OnOrOff} = State, 
 			ReplyFn(OnOrOff),
 			loop();
+		{getOps, _State, ReplyFn} -> 
+			ReplyFn([switch_on, switch_off, is_on]),
+			loop();
 		{flow_influence, State, ReplyFn} -> 
+			survivor:entry(tot_hier),
 			#{on_or_off := OnOrOff} = State,
 			FlowInfluenceFn = fun(Flow) -> flow(Flow, OnOrOff) end, % placeholder only. 
 			ReplyFn(FlowInfluenceFn), 

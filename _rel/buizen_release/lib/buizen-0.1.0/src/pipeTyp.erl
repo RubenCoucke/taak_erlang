@@ -4,15 +4,15 @@
 create() -> {ok, spawn(?MODULE, init, [])}.
 
 init() -> 
-	survivor:entry(pipeTyp_created),
+	survivor:entry({pipeTyp_created, self()}),
 	loop().
 
 get_flow_influence(TypePid, State) -> 
-	msg:get(TypePid, flow_influence, State).
+	msg:get(TypePid, get_flow_influence, State).
 
 loop() -> 
 	receive
-		{initial_state, [ResInst_Pid, TypeOptions], ReplyFn} ->
+		{initial_state, {ResInst_Pid, TypeOptions}, ReplyFn} ->
 			Location = location:create(ResInst_Pid, emptySpace),
 			In = connector:create(ResInst_Pid, simplePipe),
 			Out = connector:create(ResInst_Pid, simplePipe),
@@ -25,7 +25,7 @@ loop() ->
 		{locations_list, State, ReplyFn} -> 
 			#{chambers := L_List} = State, ReplyFn(L_List),
 			loop();
-		{flow_influence, _State, ReplyFn} -> 
+		{get_flow_influence, _State, ReplyFn} -> 
 			FlowInfluenceFn = fun(Flow) -> flow(Flow) end, % placeholder only. 
 			ReplyFn(FlowInfluenceFn), 
 			loop()

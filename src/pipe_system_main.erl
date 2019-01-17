@@ -1,10 +1,14 @@
 -module(pipe_system_main).
--export([init/0,  write_json_file/1]).
+-export([create/0, init/0]).
+
+create()->
+    
+    {ok, spawn(?MODULE, init, [])}.
 
 init()->
-    register(main_system, self()),
     survivor:start(),
     observer:start(),
+    survivor:entry({program_pid, self()}),
     %buizen maken
     {ok, PipeType} = resource_type:create(pipeTyp, []),
     {ok, Pipe1} = pipeInst:create(self(), PipeType),
@@ -19,11 +23,12 @@ init()->
    
     %debietmeter maken
     {ok, DebietmeterType} = resource_type:create(flowMeterTyp, []),
-    {ok, Debietmeter} = flowMeterInst:create(self(), DebietmeterType, Pipe1, 0),
+    {ok, Debietmeter} = flowMeterInst:create(self(), DebietmeterType, Pipe1, fun() -> no_data end),
     
     %pomp maken
+    RWCmdFn = fun(Cmd) -> survivor:entry({pumpCmd, Cmd, self()}) end,
     {ok, PompType} = resource_type:create(pumpTyp, []),
-    {ok, Pomp} = pumpInst:create(self(), PompType, Pipe2, 0),
+    {ok, Pomp} = pumpInst:create(self(), PompType, Pipe2, RWCmdFn),
 
     %warmtewisselaar maken
 
@@ -41,17 +46,33 @@ init()->
     {ok, [Warmtewisselaar2Connector1, Warmtewisselaar2Connector2]} = msg:get(Warmtewisselaar2, get_connectors),
     {ok, [Pipe7Connector1, Pipe7Connector2]} = msg:get(Pipe7, get_connectors),
 
-    connector:connect(PompConnector1, Pipe3Connector1),
-    connector:connect(Pipe3Connector2, DebietmeterConnector1),
-    connector:connect(DebietmeterConnector2, Pipe4Connector1),
-    connector:connect(Pipe4Connector2, Warmtewisselaar1Connector1),
-    connector:connect(Warmtewisselaar1Connector2, Warmtewisselaar2Connector1),
-    connector:connect(Warmtewisselaar2Connector2, Pipe7Connector1),
-    connector:connect(Pipe7Connector2, PompConnector2),
+    %connector:connect(PompConnector1, Pipe3Connector1),
+    %connector:connect(Pipe3Connector2, DebietmeterConnector1),
+    %%connector:connect(DebietmeterConnector2, Pipe4Connector1),
+    %connector:connect(Pipe4Connector2, Warmtewisselaar1Connector1),
+    %connector:connect(Warmtewisselaar1Connector2, Warmtewisselaar2Connector1),
+    %connector:connect(Warmtewisselaar2Connector2, Pipe7Connector1),
+    %connector:connect(Pipe7Connector2, PompConnector2),
+
+    {ok, AggrTyp_Pid} = simpleThermalCircuit_type:create(),
+	{ok, AggrInst_Pid} = simpleThermalCircuit_instance:create(self(), AggrTyp_Pid, [Pomp, Pipe3, Debietmeter, Pipe4,Warmtewisselaar1, Warmtewisselaar2, Pipe7]),
+
+    timer:sleep(100),
 
     %fluidum
-    FluidumType = fluidumTyp:create(),
+    {ok, FluidumType} = fluidumTyp:create(),
     {ok, Fluidum} = fluidumInst:create(PompConnector1, FluidumType),
+
+
+    timer:sleep(1000),
+    fluidumInst:load_circuit(Fluidum), 
+    timer:sleep(1000),
+    pumpInst:switch_on(Pomp), 
+
+    {ok, Circuit} = msg:get(AggrInst_Pid, get_circuit_list),
+
+    msg:get(Debietmeter, update_circuit, Circuit),	
+
 
     {ok, [PompLocatie]} = msg:get(Pomp, get_locations),
     {ok, [DebietmeterLocatie]} = msg:get(Debietmeter, get_locations),
@@ -61,9 +82,7 @@ init()->
     {ok, [WW2Locatie]} = msg:get(Warmtewisselaar2, get_locations),
     {ok, [Buis7Locatie]} = msg:get(Pipe7, get_locations),
     
-    location:departure(PompLocatie),
     
-    survivor:entry(msg:get(Debietmeter, get_state)),
 
 
     %data schrijven naar json file
@@ -92,9 +111,9 @@ init()->
                 }
             },
             <<"Warmtewisselaar 2 (buis 6)">> => #{
-                <<"locatie">> => list_to_atom(pid_to_list(WW2Locatie)),
+            <<"locatie">> => list_to_atom(pid_to_list(WW2Locatie)),
                 <<"verbindingen">> => #{
-                    <<"verbinding1">> => list_to_atom(pid_to_list(Warmtewisselaar2Connector1)),
+                     <<"verbinding1">> => list_to_atom(pid_to_list(Warmtewisselaar2Connector1)),
                     <<"verbinding2">> => list_to_atom(pid_to_list(Warmtewisselaar2Connector2))
                 }
             },
@@ -135,11 +154,46 @@ init()->
         }
     , Options),
                         
-    write_json_file(Data).
+    write_json_file_circuit(Data),
+    loop(Circuit).
     
     
-write_json_file(Text)->
-    file:write_file("../../_rel/buizen_release/lib/buizen-0.1.0/priv/static/buizen_info.json", Text).
+write_json_file_circuit(Text)->
+    survivor:entry({written, file, file:write_file("../../_rel/buizen_release/lib/buizen-0.1.0/priv/static/buizen_info.json", Text)}).
+    
+
+write_json_file_flow(Text)->
+    survivor:entry({written, file, file:write_file("../../_rel/buizen_release/lib/buizen-0.1.0/priv/static/flow_info.json", Text)}).
 
 
-%loop maken
+loop(Circuit) -> 
+    receive
+        {update_flow, ReplyFn} -> 
+            survivor:entry(Circuit),
+            [_, _, Debietmeter, _, _, _, _] = Circuit,
+            {ok, Flow} = msg:get(Debietmeter, estimate_flow),
+			Data = jiffy:encode(#{
+                <<"Flow">> => Flow
+            }),
+            write_json_file_flow(Data),
+            ReplyFn({flow, updated}),
+			loop(Circuit);
+        {turn_on_pump, ReplyFn} ->      
+            [Pomp, _, _, _, _, _, _] = Circuit,
+            pumpInst:switch_on(Pomp), 
+            ReplyFn({pump, turned, on}),
+            loop(Circuit);
+        {turn_off_pump, ReplyFn} ->      
+            [Pomp, _, _, _, _, _, _] = Circuit,
+            pumpInst:switch_off(Pomp), 
+            ReplyFn({pump, turned, off}),
+            loop(Circuit);
+        {get_temp, ReplyFn} ->      
+            [_, _, Debietmeter, _, Warmtewisselaar1, _, _] = Circuit,
+            {ok, {_,Temp}} = heatExchangerInst:temp_influence(Warmtewisselaar1),
+            {ok, Flow} = msg:get(Debietmeter, estimate_flow),
+            Temp1 = lists:foldl(Temp, 0, [Flow, 10]), 
+            ReplyFn({temp, Temp1}),
+            loop(Circuit)
+    end.
+        

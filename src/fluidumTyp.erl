@@ -3,7 +3,7 @@
 -export([create/0, init/0, discover_circuit/1]).
 -export([get_resource_circuit/2]).
 
-create() -> spawn(?MODULE, init, []).
+create() -> {ok, spawn(?MODULE, init, [])}.
 
 init() -> 
 	survivor:entry(fluidTyp_created), 
@@ -13,8 +13,8 @@ get_resource_circuit(TypePid, State) ->
 	msg:get(TypePid, resource_circuit, State). 
 
 loop() -> 
-	receive
-		{initial_state, [ResInst_Pid, [Root_ConnectorPid, TypeOptions]], ReplyFn} -> 
+	receive 
+		{initial_state, {ResInst_Pid, {Root_ConnectorPid, TypeOptions}}, ReplyFn} -> 
 			{ok, C} = discover_circuit(Root_ConnectorPid), 
 			ReplyFn(#{resInst => ResInst_Pid, circuit => C, typeOptions => TypeOptions}), 
 			loop();
@@ -25,9 +25,7 @@ loop() ->
 			ReplyFn([]),
 			loop();
 		{resource_circuit, State, ReplyFn} -> 
-			#{circuit := C} = State, 
-			{_RootC, CircuitMap} = C, 
-			ReplyFn(extract(CircuitMap)),
+			#{circuit := { _ , C} } = State, ReplyFn(extract(C)), 
 			loop()
 	end. 
 

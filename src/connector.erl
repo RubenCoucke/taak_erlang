@@ -1,6 +1,6 @@
 -module(connector).
 
--export([create/2, connect/2, disconnect/1, discard/1]).
+-export([create/2, connect/2, disconnect/1, discard/1, set_ResInst/2]).
 -export([get_connected/1, get_ResInst/1, get_type/1]).
 
 -export([init/2, test/0]). % for internal use only. 
@@ -28,6 +28,9 @@ get_ResInst(Connector_Pid) ->
 get_type(Connector_Pid) ->
 	msg:get(Connector_Pid, get_type ).
 
+set_ResInst(Connector_Pid, New_ResInst_Pid) -> 
+	Connector_Pid ! {set_ResInst, New_ResInst_Pid}.
+
 		
 discard(Connector_Pid) -> 
 	Connector_Pid ! discard. 
@@ -37,6 +40,8 @@ discard(Connector_Pid) ->
 
 loop(ResInst_Pid, Connected_Pid, ConnectTyp_Pid) -> 
 	receive
+		{set_ResInst, New_ResInst_Pid} ->
+			loop(New_ResInst_Pid, Connected_Pid, ConnectTyp_Pid);
 		{connect, C_Pid} -> 
 			survivor:entry({connection_made, self(), C_Pid, for , ResInst_Pid}),
 			loop(ResInst_Pid, C_Pid, ConnectTyp_Pid); 

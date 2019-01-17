@@ -7,14 +7,17 @@
 % this resource instance is passed to the create function.
 % RealWorldCmdFn is a function to read out the real-world flowMeter. 
 
-create(Host, FlowMeterTyp_Pid, ResInst_Pid, RealWorldCmdFn) -> 
-	{ok, spawn(?MODULE, init, [Host, FlowMeterTyp_Pid, ResInst_Pid, RealWorldCmdFn])}.
+create(Host, FlowMeterTyp_Pid, PipeInst_Pid, RealWorldCmdFn) -> 
+	{ok, spawn(?MODULE, init, [Host, FlowMeterTyp_Pid, PipeInst_Pid, RealWorldCmdFn])}.
 
-init(Host, FlowMeterTyp_Pid, ResInst_Pid, RealWorldCmdFn) -> 
-	{ok, State} = apply(resource_type, get_initial_state, [FlowMeterTyp_Pid, self(),     [ResInst_Pid, RealWorldCmdFn]]),
-									%  get_initial_state  (ResTyp_Pid,       ThisResInst, TypeOptions) 
+init(Host, FlowMeterTyp_Pid, PipeInst_Pid, RealWorldCmdFn) -> 
+	{ok, State} = resource_type:get_initial_state(FlowMeterTyp_Pid, self(), {PipeInst_Pid, RealWorldCmdFn}),
+
+	pipeInst:adapt_connectors(PipeInst_Pid, self()),
+	pipeInst:adapt_locations(PipeInst_Pid, self()),
+
 	survivor:entry({ flowMeterInst_created, State }),
-	loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid).
+	loop(Host, State, FlowMeterTyp_Pid, PipeInst_Pid).
 
 estimate_flow(FlowMeterInst_Pid) ->
 	msg:get(FlowMeterInst_Pid, estimate_flow). 
@@ -23,21 +26,24 @@ measure_flow(FlowMeterInst_Pid) ->
 	msg:get(FlowMeterInst_Pid, measure_flow).  
 
 
-loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid) -> 
+loop(Host, State, FlowMeterTyp_Pid, PipeInst_Pid) -> 
 	receive
 		{measure_flow, ReplyFn} -> 
 			{ok, Answer} = msg:get(FlowMeterTyp_Pid, measure_flow, State), 
 			ReplyFn(Answer), 
-			loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid);
-		{estimate_flow, ReplyFn} ->
-			survivor:entry({estimate_flow_state, State}),
-			{ok, InfluenceFn} = msg:get(FlowMeterTyp_Pid, estimate_flow, State),
-			ReplyFn(InfluenceFn),
-			loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid);
+			loop(Host, State, FlowMeterTyp_Pid, PipeInst_Pid);
+		{estimate_flow, ReplyFn} -> 
+			{ok, Answer} = msg:get(FlowMeterTyp_Pid, estimate_flow, State), 
+			ReplyFn(Answer),
+			loop(Host, State, FlowMeterTyp_Pid, PipeInst_Pid);
 		{get_type, ReplyFn} -> 
 			ReplyFn(FlowMeterTyp_Pid),
-			loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid);		
+			loop(Host, State, FlowMeterTyp_Pid, PipeInst_Pid);	
+		{update_circuit, Circuit, ReplyFn}->
+			NewState = maps:merge(State, #{circuit => Circuit}),
+			ReplyFn(State),
+			loop(Host, NewState, FlowMeterTyp_Pid, PipeInst_Pid);	
 		OtherMessage -> 
-			ResInst_Pid ! OtherMessage,
-			loop(Host, State, FlowMeterTyp_Pid, ResInst_Pid)
+			PipeInst_Pid ! OtherMessage,
+			loop(Host, State, FlowMeterTyp_Pid, PipeInst_Pid)
 	end.

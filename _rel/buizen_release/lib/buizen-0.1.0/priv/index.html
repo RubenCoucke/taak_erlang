@@ -8,9 +8,14 @@
   </head>
 
   <body>
-      <canvas id="myCanvas" width="1000" height="700" style="border:1px solid #000000"></canvas>
-      <button id="button" onclick="loadJson()">load</button>
-      <label id="label">label</label>
+      
+      
+      <div>
+        <canvas id="myCanvas" width="1000" height="700" style="border:1px solid #000000"></canvas>
+        <button id="button" onclick="loadJson()">load</button>
+        <label id="label">label</label>
+        <label id="labelFlow">Flow: 0</label>
+      </div>
       <script>
         var debietmeter = { name: "Debietmeter", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "green", verbondenMet: { links: "pijp", rechts: "pijp" }}
         var buis3 = { name: "Buis 3", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "blue", verbondenMet: { links: "pijp", rechts: "pijp" }}
@@ -19,13 +24,14 @@
         var ww1 = { name: "Warmtewisselaar 1", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "orange", verbondenMet: { links: "pijp", rechts: "pijp" }}
         var ww2 = { name: "Warmtewisselaar 2", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "orange", verbondenMet: { links: "pijp", rechts: "pijp" }}
         var pomp = { name: "Pomp", locatiePid: "", connectorPid: {connector1: "", connector2: ""}, locatieX: 0, locatieY: 0, kleur: "black", verbondenMet: { links: "pijp", rechts: "pijp" }}
-        var buizenarray = [pomp, debietmeter, buis3, buis4, ww1, ww2, buis7];
+        var buizenarray = [pomp, debietmeter, buis3, buis4, buis7, ww1, ww2];
         var mousePos = { x: 0, y: 0};
         
         loadJson();
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
         var label = document.getElementById("label");
+        var labelFlow = document.getElementById("labelFlow");
 
         function showInformation(information){
           console.log("show info");
@@ -39,7 +45,13 @@
 
             $.parseJSON(data);
             
-            drawCircuit(data);
+            if(data != null) drawCircuit(data);
+
+          });
+          $.getJSON("static/flow_info.json", function(data){
+
+          $.parseJSON(data);
+            if(data != null) labelFlow.innerText = ("Flow: " + data["Flow"]);
 
           });
         };
@@ -156,7 +168,7 @@
           for (var i = 0; i < buizenAanOnderZijde; i++) 
           {
             if(buizenAanOnderZijde < hoogtsteAantalBuizenAanEenKant && i == hoogtsteAantalBuizenAanEenKant-2){
-              currentBuisTekenen.locatieX = [currentX - pipeLength, currentX];
+              currentBuisTekenen.locatieX = [startX, currentX];
               currentBuisTekenen.locatieY = [currentY, currentY+20];
               //lijn tekenen
               ctx.beginPath();
@@ -323,8 +335,10 @@
 
         (function() {
           
+          
           document.onmousemove = handleMouseMove;
           document.onmousedown = handleMouseDown;
+          
 
           function handleMouseDown(event){
             
@@ -340,6 +354,7 @@
           }
 
           function handleMouseMove(event) {
+              
               var dot, eventDoc, doc, body, pageX, pageY;
 
               event = event || window.event; // IE-ism

@@ -13,7 +13,7 @@ create(Selector, ParameterList) ->
 	apply(Selector, create, ParameterList).
 	
 get_initial_state(ResTyp_Pid, ResInst_Pid, TypeOptions) -> 
-	msg:get(ResTyp_Pid, initial_state, [ResInst_Pid, TypeOptions]). 
+	msg:get(ResTyp_Pid, initial_state, {ResInst_Pid, TypeOptions}). 
 %	{ok, State} = resource_type:get_initial_state(ResTyp_Pid, self(), []),
 	
 get_connections_list(ResTyp_Pid, State) -> 

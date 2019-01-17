@@ -10,7 +10,7 @@ init() ->
 
 loop() -> 
 	receive
-		{initial_state, [ResInst_Pid, PipeInst_Pid], ReplyFn} ->
+		{initial_state, {ResInst_Pid, PipeInst_Pid}, ReplyFn} ->
 			ReplyFn(#{resInst => ResInst_Pid, pipeInst => PipeInst_Pid}), 
 			loop()
 	end. 
