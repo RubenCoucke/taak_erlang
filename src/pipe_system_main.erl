@@ -168,10 +168,20 @@ write_json_file_flow(Text)->
 
 loop(Circuit) -> 
     receive
-        {update_flow, ReplyFn} -> 
+        {estimate_flow, ReplyFn} -> 
             survivor:entry(Circuit),
             [_, _, Debietmeter, _, _, _, _] = Circuit,
             {ok, Flow} = msg:get(Debietmeter, estimate_flow),
+			Data = jiffy:encode(#{
+                <<"Flow">> => Flow
+            }),
+            write_json_file_flow(Data),
+            ReplyFn({flow, updated}),
+			loop(Circuit);
+        {measure_flow, ReplyFn} -> 
+            survivor:entry(Circuit),
+            [_, _, Debietmeter, _, _, _, _] = Circuit,
+            {ok, Flow} = msg:get(Debietmeter, measure_flow),
 			Data = jiffy:encode(#{
                 <<"Flow">> => Flow
             }),
@@ -187,6 +197,7 @@ loop(Circuit) ->
             [Pomp, _, _, _, _, _, _] = Circuit,
             pumpInst:switch_off(Pomp), 
             ReplyFn({pump, turned, off}),
+            
             loop(Circuit);
         {get_temp, ReplyFn} ->      
             [_, _, Debietmeter, _, Warmtewisselaar1, _, _] = Circuit,

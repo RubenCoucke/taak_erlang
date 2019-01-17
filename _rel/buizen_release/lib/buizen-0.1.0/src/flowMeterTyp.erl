@@ -48,13 +48,11 @@ influence([H|T], Acc, ResInst_Pid) ->
 			InflFn = fun(Flow) -> flow(Flow) end,
 			survivor:entry({flow_computed_for, H, currentPid, ResInst_Pid}),
 			
-			survivor:entry({influence_function, InflFn}),
 			influence(T, [ InflFn | Acc] , ResInst_Pid);
 		true ->
 			{ok, InflFn} = apply(resource_instance, get_flow_influence, [H]),
 			survivor:entry({flow_computed_for, H, currentPid, ResInst_Pid}),
 			
-			survivor:entry({influence_function, InflFn}),
 			influence(T, [ InflFn | Acc ] , ResInst_Pid)
 	end;
 

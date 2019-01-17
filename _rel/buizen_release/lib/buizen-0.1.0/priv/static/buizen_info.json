@@ -1,83 +1,83 @@
 {
   "Warmtewisselaar 2 (buis 6)" : {
     "verbindingen" : {
-      "verbinding2" : "<0.1044.0>",
-      "verbinding1" : "<0.1043.0>"
+      "verbinding2" : "<0.1039.0>",
+      "verbinding1" : "<0.1038.0>"
     },
-    "locatie" : "<0.1042.0>"
+    "locatie" : "<0.1037.0>"
   },
   "Warmtewisselaar 1 (buis 5)" : {
     "verbindingen" : {
-      "verbinding2" : "<0.1041.0>",
-      "verbinding1" : "<0.1040.0>"
+      "verbinding2" : "<0.1036.0>",
+      "verbinding1" : "<0.1035.0>"
     },
-    "locatie" : "<0.1039.0>"
+    "locatie" : "<0.1034.0>"
   },
   "Verbindingen" : [
     [
-      "<0.1032.0>",
-      "<0.1034.0>"
+      "<0.1027.0>",
+      "<0.1029.0>"
     ],
     [
-      "<0.1035.0>",
-      "<0.1028.0>"
+      "<0.1030.0>",
+      "<0.1023.0>"
     ],
     [
-      "<0.1029.0>",
-      "<0.1037.0>"
+      "<0.1024.0>",
+      "<0.1032.0>"
     ],
     [
-      "<0.1038.0>",
-      "<0.1040.0>"
+      "<0.1033.0>",
+      "<0.1035.0>"
     ],
     [
-      "<0.1041.0>",
-      "<0.1043.0>"
+      "<0.1036.0>",
+      "<0.1038.0>"
     ],
     [
-      "<0.1044.0>",
-      "<0.1046.0>"
+      "<0.1039.0>",
+      "<0.1041.0>"
     ],
     [
-      "<0.1047.0>",
-      "<0.1031.0>"
+      "<0.1042.0>",
+      "<0.1026.0>"
     ]
   ],
   "Pomp (buis 1)" : {
     "verbindingen" : {
-      "verbinding2" : "<0.1032.0>",
-      "verbinding1" : "<0.1031.0>"
+      "verbinding2" : "<0.1027.0>",
+      "verbinding1" : "<0.1026.0>"
     },
-    "locatie" : "<0.1030.0>"
+    "locatie" : "<0.1025.0>"
   },
   "Debietmeter (buis 2)" : {
     "verbindingen" : {
-      "verbinding2" : "<0.1029.0>",
-      "verbinding1" : "<0.1028.0>"
+      "verbinding2" : "<0.1024.0>",
+      "verbinding1" : "<0.1023.0>"
     },
-    "locatie" : "<0.1027.0>"
+    "locatie" : "<0.1022.0>"
   },
   "Buizen" : {
     "Buis 7" : {
       "verbindingen" : {
-        "verbinding2" : "<0.1047.0>",
-        "verbinding1" : "<0.1046.0>"
+        "verbinding2" : "<0.1042.0>",
+        "verbinding1" : "<0.1041.0>"
       },
-      "locatie" : "<0.1045.0>"
+      "locatie" : "<0.1040.0>"
     },
     "Buis 4" : {
       "verbindingen" : {
-        "verbinding2" : "<0.1038.0>",
-        "verbinding1" : "<0.1037.0>"
+        "verbinding2" : "<0.1033.0>",
+        "verbinding1" : "<0.1032.0>"
       },
-      "locatie" : "<0.1036.0>"
+      "locatie" : "<0.1031.0>"
     },
     "Buis 3" : {
       "verbindingen" : {
-        "verbinding2" : "<0.1035.0>",
-        "verbinding1" : "<0.1034.0>"
+        "verbinding2" : "<0.1030.0>",
+        "verbinding1" : "<0.1029.0>"
       },
-      "locatie" : "<0.1033.0>"
+      "locatie" : "<0.1028.0>"
     }
   }
 }

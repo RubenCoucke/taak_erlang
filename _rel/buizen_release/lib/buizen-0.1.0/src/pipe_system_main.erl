@@ -167,13 +167,21 @@ write_json_file_flow(Text)->
 
 
 loop(Circuit) -> 
-    survivor:entry(kakapipi),
     receive
-        
-        {update_flow, ReplyFn} -> 
+        {estimate_flow, ReplyFn} -> 
             survivor:entry(Circuit),
             [_, _, Debietmeter, _, _, _, _] = Circuit,
             {ok, Flow} = msg:get(Debietmeter, estimate_flow),
+			Data = jiffy:encode(#{
+                <<"Flow">> => Flow
+            }),
+            write_json_file_flow(Data),
+            ReplyFn({flow, updated}),
+			loop(Circuit);
+        {measure_flow, ReplyFn} -> 
+            survivor:entry(Circuit),
+            [_, _, Debietmeter, _, _, _, _] = Circuit,
+            {ok, Flow} = msg:get(Debietmeter, measure_flow),
 			Data = jiffy:encode(#{
                 <<"Flow">> => Flow
             }),
