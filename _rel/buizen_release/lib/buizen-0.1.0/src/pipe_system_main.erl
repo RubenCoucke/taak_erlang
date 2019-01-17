@@ -197,12 +197,13 @@ loop(Circuit) ->
             [Pomp, _, _, _, _, _, _] = Circuit,
             pumpInst:switch_off(Pomp), 
             ReplyFn({pump, turned, off}),
+            
             loop(Circuit);
         {get_temp, ReplyFn} ->      
             [_, _, Debietmeter, _, Warmtewisselaar1, _, _] = Circuit,
             {ok, {_,Temp}} = heatExchangerInst:temp_influence(Warmtewisselaar1),
             {ok, Flow} = msg:get(Debietmeter, estimate_flow),
-            Temp1 = lists:foldl(Temp, 0, [Flow, 10]), 
+            Temp1 = Temp(Flow, 25), 
             ReplyFn({temp, Temp1}),
             loop(Circuit)
     end.
